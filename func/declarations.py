@@ -1,4 +1,7 @@
 
+import math
+
+
 class Operand:
     def getValue():
         return None
@@ -24,6 +27,9 @@ class Variable(Operand):
 
     def getValue(self):
         return self.value
+
+    def getName(self):
+        return self.name
 
 
 class Operation:
@@ -77,6 +83,33 @@ class Division(Operation):
 
     def evaluate(self, op1, op2):
         return op1 / op2
+
+
+class Logarithm(Operation):
+    def __init__(self):
+        self.prio = 3
+        self.symbol = "log"
+
+    def evaluate(self, op1, op2):
+        return math.log(op2, op1)
+
+
+class Min(Operation):
+    def __init__(self):
+        self.prio = 3
+        self.symbol = "min"
+
+    def evaluate(self, op1, op2):
+        return min([op1, op2])
+
+
+class Max(Operation):
+    def __init__(self):
+        self.prio = 3
+        self.symbol = "max"
+
+    def evaluate(self, op1, op2):
+        return max([op1, op2])
 
 
 class Power(Operation):

@@ -8,7 +8,7 @@ in the form of string and evaluating it
 from declarations import *
 
 
-def value_post(expression):
+def evaluate_post_text(expression):
     value = 0
     stack = []
     for el in expression:
@@ -70,6 +70,9 @@ operations = {"+": Addition,
               "/": Division,
               "^": Power,
               "(": OpenBracket,
+              "log": Logarithm,
+              "min": Min,
+              "max": Max
               }
 
 
@@ -100,10 +103,22 @@ def to_postfix(expression):
                 postfix.append(opstack.pop())
             opstack.pop()
         elif expression[i] != " ":
-            to = i
-            while to < len(expression) - 1 and expression[to + 1].isnumeric():
-                to += 1
-            postfix.append(Constant(float(expression[i:to + 1])))
+            if expression[i].isalpha():
+                to = i
+                while to < len(expression) - 1 and expression[to + 1].isalpha():
+                    to += 1
+                if expression[i:to + 1] in operations:
+                    while len(opstack) > 0 and getPrio(expression[i:to + 1]) <= opstack[-1].getPriority():
+                        if not isinstance(opstack[-1], OpenBracket):
+                            postfix.append(opstack.pop())
+                        else:
+                            opstack.pop()
+                    opstack.append(getOperation(expression[i:to + 1])())
+            if expression[i].isnumeric():
+                to = i
+                while to < len(expression) - 1 and (expression[to + 1].isnumeric() or expression[to + 1] == "."):
+                    to += 1
+                postfix.append(Constant(float(expression[i:to + 1])))
             i = to
         i += 1
     if len(opstack) > 0:
@@ -127,12 +142,15 @@ def evaluate_post(expression):
 
 
 def test():
-    assert evaluate_post(to_postfix("  10 + 20")) == 30
+    assert evaluate_post(to_postfix("  10.1+ 20")) == 30.1
     assert evaluate_post(to_postfix("  10 / 20")) == 0.5
     assert evaluate_post(to_postfix("  10 - 20")) == -10
     assert evaluate_post(to_postfix("  10 * 20")) == 200
     assert evaluate_post(to_postfix("(0-2)^3")) == -8
     assert evaluate_post(to_postfix("0-10 + 20 / (2*10)")) == -9
+    assert evaluate_post(to_postfix("2min4")) == 2
+    assert evaluate_post(to_postfix("2max4")) == 4
+    assert evaluate_post(to_postfix("2log4")) == 2
     print("Good")
 
 
