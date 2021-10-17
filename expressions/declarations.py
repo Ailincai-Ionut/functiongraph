@@ -7,7 +7,6 @@ class Operand:
 
 
 class Constant(Operand):
-
     def __init__(self, value):
         self.value = value
 
@@ -16,7 +15,6 @@ class Constant(Operand):
 
 
 class Variable(Operand):
-
     def __init__(self, name, value):
         self.value = value
         self.name = name
@@ -113,7 +111,7 @@ class Power(Operation):
         self.mulOut = False
 
     def getResult(self, op1, op2):
-        return op1 ** op2
+        return op1**op2
 
 
 class Logarithm(Operation):
