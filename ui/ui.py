@@ -1,55 +1,38 @@
-import math
 import pygame
-import sys
+from pygame.locals import *
+import math
 
-sys.path.append('../expressions')
-from func import *
+#from .funciongraph.expressions.func import *
+import sys
+if True:
+    sys.path.append('../expressions')
+    from func import *
+from graph import *
 
 pygame.init()
-size = width, height = 640, 480
-
-ox = -10, 10
-oy = -10, 10
-origin = [size[0] / 2, size[1] / 2]
-px_per_unitx = size[0] / (ox[1] - ox[0])
-px_per_unity = size[1] / (oy[1] - oy[0])
-
+size = width, height = 1280, 640
 screen = pygame.display.set_mode(size)
 
-
-def draw_axes(screen):
-    for i in range(0, ox[1] - ox[0] + 1, 1):
-        pygame.draw.lines(screen, (0, 0, 0), True,
-                          [(i * px_per_unitx, origin[1] - 5),
-                           (i * px_per_unitx, origin[1] + 5)])
-    for i in range(0, oy[1] - oy[0] + 1, 1):
-        pygame.draw.lines(screen, (0, 0, 0), True,
-                          [(origin[0] - 5, i * px_per_unity),
-                           (origin[0] + 5, i * px_per_unity)])
-    pygame.draw.lines(screen, (0, 0, 0), True, [(0, origin[1]),
-                                                (size[0], origin[1])])
-    pygame.draw.lines(screen, (0, 0, 0), True, [(origin[0], 0),
-                                                (origin[0], size[1])])
-
-
-def f(x):
-    return evaluate("sqrt(" + str(abs(x)) + ",0)")[0]
-
+game = Graph(screen, [100, 100], [600, 500], [
+    Function("sin(x,0)", (255, 0, 0)),
+    Function("cos(x,0)", (0, 255, 0)),
+    Function("tan(x,0)", (0, 0, 255))
+])
+game2 = Graph(screen, [601, 100], [1100, 500], [
+    Function("x*sin(x,0)", (255, 0, 0)),
+    Function("x*cos(x,0)", (0, 255, 0)),
+    Function("x*tan(x,0)", (0, 0, 255))
+])
 
 while 1:
-    screen.fill((128, 128, 128))
+    inp = []
+    screen.fill((255, 255, 255))
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
             sys.exit()
-    draw_axes(screen)
-    p = [0, int((f(0) - oy[0]) / (oy[1] - oy[0]) * size[1])]
-    i = ox[0]
-    while i < ox[1]:
-        r = (i - ox[0]) / (ox[1] - ox[0])
-        rf = (f(i) - oy[0]) / (oy[1] - oy[0])
-        print((int(r * size[0]), int((1 - rf) * size[1])), i, rf, r, f(i))
-        new_p = [int(r * size[0]), int((1 - rf) * size[1])]
-        pygame.draw.line(screen, (0, 0, 0), p, new_p)
-        p = new_p.copy()
-        i += (ox[1] - ox[0]) / size[0]
+        if e.type == pygame.KEYDOWN:
+            inp = [pygame.key.get_pressed(), [1]]
+
+    game.run(screen, inp)
+    game2.run(screen, inp)
     pygame.display.flip()

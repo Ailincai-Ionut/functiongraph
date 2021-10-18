@@ -100,6 +100,8 @@ class Division(Operation):
         self.mulOut = False
 
     def getResult(self, op1, op2):
+        if op2 == 0:
+            return None
         return op1 / op2
 
 
@@ -239,3 +241,4 @@ class SquareRoot(Operation):
 class OpenBracket(Operation):
     def __init__(self):
         self.prio = 0
+        self.func = False

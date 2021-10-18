@@ -41,10 +41,11 @@ def to_postfix_text(expression):
     opstack = []
     postfix = []
     i = 0
-    while(i < len(expression)):
+    while (i < len(expression)):
         if expression[i] in "+-/*":
             if len(opstack) > 0:
-                while len(opstack) > 0 and post_values(expression[i]) <= post_values(opstack[-1]):
+                while len(opstack) > 0 and post_values(
+                        expression[i]) <= post_values(opstack[-1]):
                     if opstack[-1] != "(":
                         postfix.append(opstack.pop())
                     else:
@@ -70,23 +71,25 @@ def to_postfix_text(expression):
 
 
 # The list of all operations
-operations = {"+": Addition,
-              "-": Difference,
-              "*": Multiplication,
-              "/": Division,
-              "^": Power,
-              "(": OpenBracket,
-              "log": Logarithm,
-              "min": Min,
-              "max": Max,
-              "sin": Sin,
-              "cos": Cos,
-              "tan": Tan,
-              "arcsin": ArcSin,
-              "arccos": ArcCos,
-              "arctan": ArcTan,
-              "sqrt": SquareRoot
-              }
+operations = {
+    "+": Addition,
+    "-": Difference,
+    "*": Multiplication,
+    "/": Division,
+    "^": Power,
+    "(": OpenBracket,
+    "log": Logarithm,
+    "min": Min,
+    "max": Max,
+    "sin": Sin,
+    "cos": Cos,
+    "tan": Tan,
+    "arcsin": ArcSin,
+    "arccos": ArcCos,
+    "arctan": ArcTan,
+    "sqrt": SquareRoot
+}
+#please implement factorial
 
 
 def getOperation(operation):
@@ -148,7 +151,8 @@ def to_postfix(expression):
     # Ex.: 1+1 = 11+ in postfix\
 
     opstack = []  # the operation stack
-    postfix = []  # the output, a list with operands and operations in the posfix form
+    postfix = [
+    ]  # the output, a list with operands and operations in the posfix form
 
     # We go through every character
     i = 0
@@ -159,7 +163,8 @@ def to_postfix(expression):
             # if its and operation we pop and add to the output the operations on the opstack
             # that have a lower or equal priority
             # Priority ex: +<*<log
-            while len(opstack) > 0 and getPrio(expression[i]) <= opstack[-1].getPriority():
+            while len(opstack) > 0 and getPrio(
+                    expression[i]) <= opstack[-1].getPriority():
                 if not isinstance(opstack[-1], OpenBracket):
                     postfix.append(opstack.pop())
                 else:
@@ -179,11 +184,13 @@ def to_postfix(expression):
             to = i
             if expression[i].isalpha():
                 # Variables and multiple characters operations
-                while to < len(expression) - 1 and expression[to + 1].isalpha() and expression[to + 1] != "(":
+                while to < len(expression) - 1 and expression[
+                        to + 1].isalpha() and expression[to + 1] != "(":
                     to += 1
                 if expression[i:to + 1] in operations:
                     # if it's a multiple characters operation we did the same trick as for normal operations
-                    while len(opstack) > 0 and getPrio(expression[i:to + 1]) <= opstack[-1].getPriority():
+                    while len(opstack) > 0 and getPrio(
+                            expression[i:to + 1]) <= opstack[-1].getPriority():
                         if not isinstance(opstack[-1], OpenBracket):
                             postfix.append(opstack.pop())
                         else:
@@ -194,7 +201,9 @@ def to_postfix(expression):
                     postfix.append(Variable(expression[i:to + 1], 0))
             if expression[i].isnumeric():
                 # Numerical constants
-                while to < len(expression) - 1 and (expression[to + 1].isnumeric() or expression[to + 1] == "."):
+                while to < len(expression) - 1 and (
+                        expression[to + 1].isnumeric()
+                        or expression[to + 1] == "."):
                     to += 1
                 postfix.append(Constant(float(expression[i:to + 1])))
             i = to
@@ -237,7 +246,7 @@ def get_interval_value(expression, interval):
         if isinstance(expression[i], Variable):
             index_list.append(i)
     x = interval[0]
-    while x < interval[1]:
+    while x <= interval[1]:
         new_ex = expression.copy()
         for i in index_list:
             new_ex[i].setValue(x)
