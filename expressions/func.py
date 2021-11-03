@@ -4,7 +4,7 @@
 
 This module provides functions for analizing an expression and getting its value
 '''
-from declarations import *
+from expressions.declarations import *
 
 
 def evaluate_post_text(expression):
@@ -240,6 +240,7 @@ def evaluate_post(expression):
 def get_interval_value(expression, interval):
     # This function expects an expression with only one variable and
     # returns the list of values in the interval [start,end,increment]
+    # The values in the list will be formatted like this:[value var,value expr at var]
     values = []
     index_list = []
     for i in range(len(expression)):
@@ -250,6 +251,8 @@ def get_interval_value(expression, interval):
         new_ex = expression.copy()
         for i in index_list:
             new_ex[i].setValue(x)
-        values.append(evaluate_post(new_ex))
+        value = evaluate_post(new_ex)
+        if value != None:
+            values.append([x, value])
         x += interval[2]
     return values

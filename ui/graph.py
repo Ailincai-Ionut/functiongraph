@@ -2,16 +2,24 @@ import pygame
 import sys
 from pygame.locals import *
 
-if True:
-    sys.path.append('../expressions')
-    from func import *
+from expressions.func import *
 
 
 class Function():
-    def __init__(self, text_function, color=(0, 0, 0)):
+    def __init__(self, text_function, f=None, color=(0, 0, 0)):
         self.expression = text_function
         self.color = color
         self.points = []
+        self.f = f
+
+    def update_points(self, interval):
+        return self.points
+
+    def get_point_at(self, x):
+        return self.f(x)
+
+    def set_func(self, f):
+        self.f = f
 
 
 class Graph():
@@ -28,7 +36,7 @@ class Graph():
         self.points = []
         self.update()
 
-    def draw_axes(self, screen):
+    def draw_axes(self):
         #This is utterly shit, fix this pls
         '''
         for i in range(0, int(self.ox[1] - self.ox[0] + 1), 1):
@@ -42,10 +50,10 @@ class Graph():
         '''
         #The ox axis
         if self.oy[0] < 0 and self.oy[1] > 0:
-            self.line(screen, (0, 0, 0), (0, self.origin[1]),
+            self.line((0, 0, 0), (0, self.origin[1]),
                       (self.size[0], self.origin[1]))
         if self.ox[0] < 0 and self.ox[1] > 0:
-            self.line(screen, (0, 0, 0), (self.origin[0], 0),
+            self.line((0, 0, 0), (self.origin[0], 0),
                       (self.origin[0], self.size[1]))
 
     def update(self):
@@ -56,18 +64,24 @@ class Graph():
         self.adjust_origin()
 
     def input(self, keys, mouse):
-        if keys[K_LEFT]:
-            self.ox[0] -= 0.33
-            self.ox[1] -= 0.33
-        if keys[K_RIGHT]:
-            self.ox[0] += 0.33
-            self.ox[1] += 0.33
-        if keys[K_UP]:
-            self.oy[0] += 0.33
-            self.oy[1] += 0.33
-        if keys[K_DOWN]:
-            self.oy[0] -= 0.33
-            self.oy[1] -= 0.33
+        if keys != None:
+            if keys[K_LEFT]:
+                self.ox[0] -= 0.33
+                self.ox[1] -= 0.33
+            if keys[K_RIGHT]:
+                self.ox[0] += 0.33
+                self.ox[1] += 0.33
+            if keys[K_UP]:
+                self.oy[0] += 0.33
+                self.oy[1] += 0.33
+            if keys[K_DOWN]:
+                self.oy[0] -= 0.33
+                self.oy[1] -= 0.33
+            if keys[K_SPACE]:
+                self.oy[0] += 0.33
+                self.oy[1] -= 0.33
+                self.ox[0] += 0.33
+                self.ox[1] -= 0.33
         self.adjust_origin()
         self.update()
 
@@ -76,6 +90,8 @@ class Graph():
 
     def limit_line(self, s1, f1, s2, f2):
         '''
+        This function gets the point intersected by the two lines
+        formed by the points
         #We will use a complicated formula
         #link:https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
         '''
@@ -90,7 +106,7 @@ class Graph():
             s1[1] - f1[1]) * (s2[0] * f2[1] - s2[1] * f2[0])
         return [int(xd / d), int(yd / d)]
 
-    def line(self, screen, color, s, f):
+    def line(self, color, s, f):
         #TODO: It needs to draw the line until the margin
         if (s[1] > self.size[1] and f[1] > self.size[1]) or (s[1] < 0
                                                              and f[1] < 0):
@@ -105,46 +121,63 @@ class Graph():
                                 [f[0], self.size[1]])
         elif f[1] < 0:
             f = self.limit_line(s, f, [s[0], 0], [f[0], 0])
-        pygame.draw.lines(screen, color, True,
+        pygame.draw.lines(self.screen, color, True,
                           [(self.start[0] + s[0], self.start[1] + s[1]),
                            (self.start[0] + f[0], self.start[1] + f[1])])
 
-    def draw(self, screen):
-        screen.fill((128, 128, 128),
-                    Rect(self.start[0], self.start[1], self.size[0],
-                         self.size[1]))
-        self.draw_axes(screen)
+    def draw(self):
+        self.screen.fill((128, 128, 128),
+                         Rect(self.start[0], self.start[1], self.size[0],
+                              self.size[1]))
+        self.draw_axes()
         for f in self.functions:
-            self.draw_func(screen, f)
+            self.draw_func(f)
         pygame.draw.rect(
-            screen, (0, 0, 0),
+            self.screen, (0, 0, 0),
             Rect(self.start[0], self.start[1], self.size[0], self.size[1]), 2)
 
-    def draw_func(self, screen, f):
-        increment = (self.ox[1] - self.ox[0]) / self.size[0]
-        p = [
-            0,
-            int((f.points[0] - self.oy[0]) / (self.oy[1] - self.oy[0]) *
-                self.size[1])
-        ]
-        for i in range(0, len(f.points)):
-            if not f.points[i] is None:
-                rf = (f.points[i] - self.oy[0]) / (self.oy[1] - self.oy[0])
-                r = (i * increment) / (self.ox[1] - self.ox[0])
-                #print((int(r * self.size[0]), int((1 - rf) * self.size[1])), i, rf, r,
-                #      self.points[i])
+    def draw_func(self, f):
+        '''
+        This algorithm is efficient but very buggy
+        Its needs f.points to be a list of points [x,y] so if used modify the
+            get_interval_value() function from func.py to return such pairs'''
+        if f.points != []:
+            increment = (self.ox[1] - self.ox[0]) / self.size[0]
+            p = [
+                int(((f.points[0][0] - self.ox[0]) /
+                     (self.ox[1] - self.ox[0])) * self.size[0]),
+                int((f.points[0][1] - self.oy[0]) / (self.oy[0] - self.oy[1]) *
+                    self.size[1])
+            ]
+            for point in f.points:
+                rf = (point[1] - self.oy[0]) / (self.oy[1] - self.oy[0])
+                r = (point[0] - self.ox[0]) / (self.ox[1] - self.ox[0])
                 new_p = [int(r * self.size[0]), int((1 - rf) * self.size[1])]
-                if self.dist(p, new_p) < 1000:
-                    self.line(screen, f.color, p, new_p)
+                if self.dist(p,
+                             new_p) < 1000:  #this hard-coded value is not good
+                    self.line(f.color, p, new_p)
                 p = new_p.copy()
 
-    def run(self, surface, input):
+    def run(self, input):
         '''
         the input needs to be a list with 2 elements: the keys and mouse
         '''
         if len(input) == 2:
             self.input(input[0], input[1])
-        self.draw(surface)
+        self.draw()
+
+    def get_coord(self):
+        return [self.start, self.size]
+
+    def set_size(self, size):
+        self.size = size
+        self.adjust_origin()
+
+    def get_start(self):
+        return self.start
+
+    def set_start(self, start):
+        self.start = start
 
     def adjust_origin(self):
         # the absolute lenght of the ox axis displayed
